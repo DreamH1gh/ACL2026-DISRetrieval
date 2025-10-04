@@ -25,6 +25,24 @@ from tqdm import tqdm
 from torch.cuda.amp import autocast as autocast
 import torch
 
+from pathlib import Path
+
+def ensure_path_exits(path):
+    p = Path(path)
+    p.mkdir(parents=True, exist_ok=True)
+
+def read_sent(inf):
+    sentence = []
+    for line in inf:
+        line = line.strip()
+        if line == '':
+            yield sentence
+            sentence = []
+        else:
+            sentence.append(line)
+    if len(sentence) > 0:
+        yield sentence
+
 class RSTParser:
     def __init__(self, config_file='rst_parser/saved_model/100/config.cfg', use_cuda=True):
         self.config = Configurable(config_file)
@@ -80,12 +98,17 @@ class RSTParser:
             print(f"[predict_one] Error: {e}")
             return '{[(error)]}'
 
-    def predict_batch(self, data, output_file):
+    def predict_batch(self, data, output_file, parsed):
         """predict batch"""
         start = time.time()
         self.parser.eval()
         with open(output_file, mode='w', encoding='utf8') as outf:
-            for onebatch in tqdm(data_iter(data, self.config.test_batch_size, False)):
+            for sents in parsed:
+                for s in sents:
+                    outf.write(s + '\n')
+                outf.write('\n')
+            # for onebatch in tqdm(data_iter(data, self.config.test_batch_size, False)):
+            for onebatch in tqdm(data_iter(data, self.config.test_batch_size, False), total = len(data) // self.config.test_batch_size):
                 try:
                     doc_inputs = batch_doc_variable(onebatch, self.vocab, self.config, self.token_helper)
                     EDU_offset_index, batch_denominator, edu_lengths, edu_types = batch_doc2edu_variable(
@@ -131,22 +154,45 @@ class RSTParser:
         print(f"Doc num: {len(data)},  parser time = {end - start:.2f}s")
 
     def construct_rst_data(self, edu_file, rst_file):
+        parsed = []
+        parsed_ids = []
+        error_ids = []
+        out_file = rst_file + '.out'
+        p = Path(out_file)
+        if not p.exists():
+            p.touch()
+
         with open(edu_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
-            with open(rst_file, 'w', encoding='utf-8') as f:
-                print(f'write rst to {rst_file}')
-                for k, v in data.items():
-                    id = k
-                    length = len(v['sentences'])
-                    for sent in v['sentences']:
-                        f.write(sent + '\n')
-                    for i in range(length):
-                        f.write('()\n')
-                    f.write(f'{id}\n\n')
+        with open(rst_file+'.out', 'r', encoding='utf-8') as f:
+            for sentences in read_sent(f):
+                assert "# newdoc id =" in sentences[-2]
+                if "error" not in sentences[-1]:
+                    parsed_id = sentences[-2].split('=')[1].strip()
+                    if parsed_id in data.keys():
+                        parsed_ids.append(parsed_id)
+                        parsed.append(sentences)
+                # else:
+                #     error_id = sentences[-2].split('=')[1].strip()
+                #     error_ids.append(error_id)
+
+        with open(rst_file, 'w', encoding='utf-8') as f:
+            print(f'write rst to {rst_file}')
+            for k, v in data.items():
+                id = k
+                if id in parsed_ids:
+                    continue
+                length = len(v['sentences'])
+                for sent in v['sentences']:
+                    f.write(sent + '\n')
+                for i in range(length):
+                    f.write('()\n')
+                f.write(f'{id}\n\n')
+        return parsed
                     
     def start_parsing(self, edu_file):
         rst_file = edu_file + '.rst'
-        self.construct_rst_data(edu_file=edu_file, rst_file=rst_file)
+        parsed = self.construct_rst_data(edu_file=edu_file, rst_file=rst_file)
         data = inst(read_corpus(file_path=rst_file, edu_path=edu_file))
-        self.predict_batch(data=data, output_file=rst_file+'.out')
+        self.predict_batch(data=data, output_file=rst_file+'.out', parsed=parsed)
         return rst_file + '.out'
