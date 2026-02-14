@@ -1,19 +1,19 @@
 [Data]
-xlnet_dir = xlnet
-data_dir = experiment/rst_combine_1
-train_file = %(data_dir)s/rst.train_over1
+xlnet_dir = gte-multilingual-base
+data_dir = experiment/train
+train_file = %(data_dir)s/train.rst
 dev_file = %(data_dir)s/rst.dev_over1
 test_file = %(data_dir)s/rst.test_over1
 min_occur_count = 0
 
 [Save]
-percentage = 10
-save_dir = saved_model/%(percentage)s
+percentage = 100
+save_dir = saved_model/gte_zh/%(percentage)s
 config_file = %(save_dir)s/config.cfg
 xlnet_save_dir = %(save_dir)s/xlm_rst_tuned
 save_model_path = %(save_dir)s/model
 save_vocab_path = %(save_dir)s/vocab
-load_dir = saved_model/%(percentage)s
+load_dir = saved_model/gte_zh/%(percentage)s
 load_model_path = %(load_dir)s/model
 load_vocab_path = %(load_dir)s/vocab
 
@@ -45,7 +45,7 @@ epsilon = 1e-12
 clip = 1.0
 
 [Run]
-train_iters = 20
+train_iters = 10
 train_batch_size = 1
 test_batch_size = 1
 validate_every = 10000

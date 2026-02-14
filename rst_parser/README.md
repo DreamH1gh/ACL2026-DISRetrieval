@@ -11,13 +11,13 @@ rst_parser/
 │   ├── RSTparser.py (rst parser class, for inference)
 │   ├── Test.py
 │   └── TrainTest.py (train script)
-├── xlnet (xlnet model path)
+├── mgte (mgte model path)
 ├── run.sh (training startup script)
 └── ...
 ```
 
 ## Train
-- Update the `config/new.train` file. Correctly set the `xlnet_dir` to the XLNet model path and the `save_dir` to the save path. `percentage` means the percentage of training data to be used.
+- Update the `config/new.train` file. Correctly set the `xlnet_dir` to the mgte model path and the `save_dir` to the save path. `percentage` means the percentage of training data to be used.
 
 - Modify the `train_percent` configuration in `run.sh` to specify the percentage of training data to be used.
 

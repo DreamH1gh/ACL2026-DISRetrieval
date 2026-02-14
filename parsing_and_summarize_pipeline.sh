@@ -38,5 +38,10 @@ source ~/miniconda3/etc/profile.d/conda.sh
 conda activate RSTparser
 python rst_tree_build/tree_build.py --data_path "$DATA_DIR" --stage final
 
+python rst_tree_build/after_process.py \
+    --path "$DATA_DIR/doc_data/final_tree" \
+    --data_path "$DATA_DIR/doc_data/final_tree" \
+    --leaf_len 0
+
 
 echo "All done!"
