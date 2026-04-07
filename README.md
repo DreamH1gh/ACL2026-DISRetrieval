@@ -1,4 +1,4 @@
-# DISRetrieval: Harnessing Discourse Structure for Long Document Retrieval
+# Beyond Chunking: Discourse-Aware Hierarchical Retrieval for Long Document Question Answering
 
 ## Overview
 ![framework](framework.png)
@@ -39,4 +39,15 @@ Preprocessed datasets are in folder `data/qasper/doc_data` and `data/quality/doc
 - The Sentence-Bert model can download from [multi-qa-mpnet-base-cos-v1](https://huggingface.co/sentence-transformers/multi-qa-mpnet-base-cos-v1). 
 - The UnifiedQA-3B model can download from [unifiedqa-t5-3b](https://huggingface.co/allenai/unifiedqa-t5-3b)
 
+## Citation
 
+If you find our work helpful for your research, please consider citing our paper:
+
+```bibtex
+@article{chen2025beyond,
+  title={Beyond Chunking: Discourse-Aware Hierarchical Retrieval for Long Document Question Answering},
+  author={Chen, Huiyao and Yang, Yi and Li, Yinghui and Zhang, Meishan and Hu, Baotian and Zhang, Min},
+  journal={arXiv preprint arXiv:2506.06313},
+  year={2025}
+}
+```
